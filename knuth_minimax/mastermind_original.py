@@ -17,6 +17,28 @@ responses = [(matches, ncolors) for matches in range(5)
              for ncolors in range(5 - matches)]
 responses.remove((3, 1))  # +++- cannot be a valid response
 
+def add_info(g, S, symbol=False):
+    if len(S) == 0:  # answers have been inconsistent
+        return ["inconsistent", "#"][symbol]
+    if len(S) == 1:  # the final correct answer
+        return ["final", "!"][symbol]
+    if g in S:       # possibly the correct answer
+        return ["possible", "?"][symbol]
+    else:            # definitely not the correct answer yet
+        return ["impossible", "*"][symbol]
+
+def get_response(g, S):
+    if SECRET:
+        return score(SECRET, g)
+
+    inp = input('%s %s: ' % (add_info(g, S), g))
+    if set(inp) - set('+-'):
+        sys.exit("ill-formed response: %r" % inp)
+    resp = inp.count('+'), inp.count('-')
+    if resp not in responses:
+        sys.exit("invalid response: %r" % inp)
+    return resp
+
 @cache
 def guess(S):
     if len(S) == len(allcodes):  # first
@@ -30,11 +52,11 @@ def guess(S):
     return min(allcodes, key=lambda t: max(sum(score(s, t) == resp for s in S)
                                            for resp in responses))
 
-def solve(verbose=False):
+def solve(verbose=True):
     S = allcodes
     for i in itertools.count(1):
         g = guess(S)
-        resp = score(SECRET, g)
+        resp = get_response(g, S)
         if verbose:
             print("%2d %4d %s %5s %s" %
                   (i, len(S), g, g in S, '+' * resp[0] + '-' * resp[1]))
@@ -44,20 +66,19 @@ def solve(verbose=False):
         S = tuple(s for s in S if score(s, g) == resp)
 
 def main():
-    
-    global SECRET    
-    SECRET = ''.join(choices(COLORS, k=4))
-    
-    if len(SECRET) != 4 or set(SECRET) - set(COLORS):
-        sys.exit("ill-formed Mastermind code: %r" % SECRET)
+    if len(sys.argv) > 2:
+        sys.exit("Usage: %s [secret]" % sys.argv[0])
 
-    guesses = solve()
-    return guesses
+    if len(sys.argv) == 2:
+        global SECRET
+        SECRET = sys.argv[1]
+        if SECRET == '-':
+            SECRET = ''.join(choices(COLORS, k=4))
+            print("secret: %s" % SECRET)
+        if len(SECRET) != 4 or set(SECRET) - set(COLORS):
+            sys.exit("ill-formed Mastermind code: %r" % SECRET)
+
+    solve()
 
 if __name__ == '__main__':
-    total = 0
-    for i in range(1000):
-        num_guess = main()
-        total += num_guess
-
-    print(f"All feedback: {total / 1000}")
+    main()

@@ -3,18 +3,18 @@ import unittest
 from collections import Counter
 from random import choices
 
-import mastermind
+import knuth_minimax.mastermind_original as mastermind_original
 
 
 class TestMastermind(unittest.TestCase):
 
     def test_allcodes(self):
-        a = mastermind.allcodes
+        a = mastermind_original.allcodes
         self.assertEqual(len(a), 6 ** 4)
         self.assertEqual(len(set(a)), 6 ** 4)
 
     def test_responses(self):
-        self.assertEqual(len(mastermind.responses), 14)
+        self.assertEqual(len(mastermind_original.responses), 14)
 
     def test_score(self):
         for a, b, r in [
@@ -34,28 +34,28 @@ class TestMastermind(unittest.TestCase):
                 ('WWKR', 'WYKR', (3, 0)),
                 ('BGKR', 'BGKR', (4, 0)),
         ]:
-            self.assertEqual(mastermind.score(a, b), r)
-            self.assertEqual(mastermind.score(b, a), r)
-            self.assertTrue(r in mastermind.responses)
+            self.assertEqual(mastermind_original.score(a, b), r)
+            self.assertEqual(mastermind_original.score(b, a), r)
+            self.assertTrue(r in mastermind_original.responses)
 
     def test_solve(self):
-        mastermind.SECRET = ''.join(choices(mastermind.COLORS, k=4))
-        i = mastermind.solve(verbose=False)
+        mastermind_original.SECRET = ''.join(choices(mastermind_original.COLORS, k=4))
+        i = mastermind_original.solve(verbose=False)
         self.assertTrue(i <= 5)
 
 
 def test_all():
     stat = Counter()
-    for secret in mastermind.allcodes:
-        mastermind.SECRET = secret
-        i = mastermind.solve(verbose=False)
+    for secret in mastermind_original.allcodes:
+        mastermind_original.SECRET = secret
+        i = mastermind_original.solve(verbose=False)
         stat[i] += 1
         sys.stdout.write('.')
         sys.stdout.flush()
     print(stat)
     n = sum(i * n for i, n in stat.items())
     print('n:', n)
-    print('average: %.2f' % (n / len(mastermind.allcodes)))
+    print('average: %.2f' % (n / len(mastermind_original.allcodes)))
     print('worst: %d' % max(stat.keys()))
     assert stat == {
         1:    1,

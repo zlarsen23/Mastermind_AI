@@ -1,4 +1,4 @@
-from mastermind import allcodes, add_info, guess, score
+from knuth_minimax.mastermind_original import allcodes, add_info, guess, score
 
 
 # map responses to guess
