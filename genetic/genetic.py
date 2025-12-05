@@ -7,25 +7,21 @@ import sys
 
 # COLORS = [1,2,3,4,5,6]
 COLORS=[]
-TOGUESS = [1,1,1,1]
+TOGUESS = []
 CHECK_CACHE = {}
 
 
 
 
 
-MAX_POP_SIZE = 60
-MAX_GENERATIONS = 100
-
-CROSSOVER_PROBABILITY = 0.5
-CROSSOVER_THEN_MUTATION_PROBABILITY = 0.03
-PERMUTATION_PROBABILITY = 0.03
-INVERSION_PROBABILITY = 0.02
-
-ELITE_RATIO=0.4
-
-
-WEIGHT_BLACK = 5 # weight of well placed colors we give them a slightly better weight
+MAX_POP_SIZE = 60 
+MAX_GENERATIONS = 100 
+CROSSOVER_PROBABILITY = 0.5 
+CROSSOVER_THEN_MUTATION_PROBABILITY = 0.03 
+PERMUTATION_PROBABILITY = 0.03 
+INVERSION_PROBABILITY = 0.02 
+ELITE_RATIO=0.4 
+WEIGHT_BLACK = 5 # weight of well placed colors we give them a slightly better weight 
 WEIGHT_WHITE = 3 # weight of bad placed colors
 
 def check_play(ai_choice, right_choice):
@@ -312,6 +308,8 @@ def main(amount_of_colors, pegs):
         G1 = [1,1,2,3]
     elif pegs == 6:
         G1 = [1,1,2,2,3,3]
+    elif pegs == 5:
+        G1 = [1,1,2,2,3]
     code = G1
     turn = 1
 
@@ -364,7 +362,7 @@ if __name__ == '__main__':
     total = 0 
     guess = 0
     for i in range(1000):
-        guess = main(6,4) #colors,pegs
+        guess = main(7,5) #colors,pegs
         print(guess)
         total += guess
 
