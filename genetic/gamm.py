@@ -8,6 +8,10 @@ import sys
 # COLORS = [1,2,3,4,5,6]
 COLORS=[]
 TOGUESS = [1,1,1,1]
+CHECK_CACHE = {}
+
+
+
 
 
 MAX_POP_SIZE = 60
@@ -32,6 +36,10 @@ def check_play(ai_choice, right_choice):
     '''
 
     assert len(ai_choice) == len(right_choice)
+
+    key = (tuple(ai_choice), tuple(right_choice))
+    if key in CHECK_CACHE:
+        return CHECK_CACHE[key]
 
     # local copy of color to guess as reference of already calculated colors
 
@@ -60,7 +68,8 @@ def check_play(ai_choice, right_choice):
                     copy_right_choice[i] = 42
 
 
-    return (placeTrue,placeFalse)
+    CHECK_CACHE[key] = (placeTrue, placeFalse)
+    return (placeTrue, placeFalse)
 
 
 
@@ -290,82 +299,73 @@ def genetic_evolution(popsize, generations, costfitness,
 
         return chosen_ones
 
-def play(trial, turn, toFind):
-
-    # print('|||>>||||>>>>>>>>>>>>>>>>>> PLAYING: ', trial, ' Turn : ', turn)
-    res =  check_play(trial, toFind)
-    return res
 
 
-def usage():
-    """usage doc"""
-    print('''
-          Usage: ./gamastermind.py number_of_colors code_to_guess
-          example: ./gamastermind.py 6 1234
-          6 colors, and 4 digit code <1 2 3 4>
-          ''')
+def main(amount_of_colors, pegs):
+
+    COLORS.clear()
+    COLORS.extend(range(1, int(amount_of_colors) + 1))
+    TOGUESS = [random.choice(COLORS) for _ in range(pegs)]
+
+    random.seed(os.urandom(32))
+    if pegs == 4:
+        G1 = [1,1,2,3]
+    elif pegs == 6:
+        G1 = [1,1,2,2,3,3]
+    code = G1
+    turn = 1
+
+    guesses = []
+
+    def scoref(trial):
+        return fitness_score(trial, code, guesses, slots=pegs)
+
+    result = check_play(code, TOGUESS)
+    guesses.append((code, result))
+
+   
+    if result == (pegs,0):
+        return turn
+
+    while result != (pegs,0):
+        eligibles = genetic_evolution(MAX_POP_SIZE, MAX_GENERATIONS, scoref, slots=pegs)
+
+        while True:
+            if not eligibles:
+                eligibles = genetic_evolution(
+                    MAX_POP_SIZE,
+                    MAX_GENERATIONS,
+                    scoref,
+                    slots=pegs
+                )
+
+                
+                if not eligibles:
+                    code = [random.choice(COLORS) for _ in range(pegs)]
+                    break
+
+            code = eligibles.pop()
+
+            if code not in [c for (c, r) in guesses]:
+                break
 
 
-def main():
-
-
-        if len(sys.argv) != 3:
-            usage()
-            sys.exit(1)
-        elif (sys.argv[1] == 'help'):
-            usage()
-            sys.exit(1)
-        else:
-            COLORS.extend(range(1, int(sys.argv[1]) + 1))
-            TOGUESS = [int(c) for c in sys.argv[2]]
-
-        print('Colors: %s' % COLORS )
-        print('Code to guess: %s' % TOGUESS)
-
-        random.seed(os.urandom(32))
-        G1 = [1,1,2,2] #initial guess
-        code = G1
-        turn = 1
-
-
-        # List of all tried guesses Gi
-        guesses = []
-
-
-        def scoref(trial):
-                return fitness_score(trial, code, guesses, slots=4)
-
-        result=play(code, turn, TOGUESS)
+        turn += 1
+        result = check_play(code, TOGUESS)
         guesses.append((code, result))
 
-        last_eligibles = []
-        while result != (4,0):
-            eligibles = genetic_evolution(MAX_POP_SIZE, MAX_GENERATIONS, scoref, slots=4)
-            print('Ei', len(eligibles))
+    return turn
 
-            while len(eligibles) == 0:
-                print('is 0')
-                print(guesses)
-                eligibles = genetic_evolution(MAX_POP_SIZE*2, MAX_GENERATIONS/2, scoref, slots=4)
-
-            #### DO NOT USE RANDOM
-            code = eligibles.pop()
-            while code in [c for (c, r) in guesses]:
-                # print('DUPLICAAAAAAAAAATE')
-                code = eligibles.pop()
-
-
-            #### DO NOT USE RANDOM
-            turn += 1
-            result = play(code, turn, TOGUESS)
-            guesses.append((code, result))
-
-
-            if result == (4,0):
-                print('WIIIIIIN')
-                print(code, result)
 
 
 
 if __name__ == '__main__':
-        main()
+
+    total = 0 
+    guess = 0
+    for i in range(1000):
+        guess = main(6,4) #colors,pegs
+        print(guess)
+        total += guess
+
+    print(f"All feedback (genetic): {total / 1000}")

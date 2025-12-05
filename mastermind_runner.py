@@ -10,4 +10,8 @@ for script in scripts:
     )
     print(f"--- Output of {script} ---")
     print(result.stdout)
+
+    if result.stderr:                       
+        print("ERROR:")
+        print(result.stderr)
     

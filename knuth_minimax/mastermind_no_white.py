@@ -1,3 +1,5 @@
+# Modified script frrom https://github.com/ilanschnell/mastermind
+
 import sys
 import itertools
 from functools import cache

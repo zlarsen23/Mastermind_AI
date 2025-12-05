@@ -4,7 +4,7 @@ from functools import cache
 from random import choices
 
 
-COLORS = 'BGKRWY'  # Blue, Green, blacK, Red, White, Yellow
+COLORS = 'BGKRWYTQ'  # Blue, Green, blacK, Red, White, Yellow, Teal, Q
 SECRET = None
 
 @cache
@@ -12,15 +12,15 @@ def score(a, b):
     matches = sum(x == y for x, y in zip(a, b))
     return matches, sum(min(a.count(c), b.count(c)) for c in COLORS) - matches
 
-allcodes = tuple(''.join(p) for p in itertools.product(COLORS, repeat=4))
-responses = [(matches, ncolors) for matches in range(5)
-             for ncolors in range(5 - matches)]
-responses.remove((3, 1))  # +++- cannot be a valid response
+allcodes = tuple(''.join(p) for p in itertools.product(COLORS, repeat=6))
+responses = [(matches, ncolors) for matches in range(7)
+             for ncolors in range(7 - matches)]
+responses.remove((5, 1))  # +++- cannot be a valid response
 
 @cache
 def guess(S):
     if len(S) == len(allcodes):  # first
-        return 'BBGG'
+        return 'BBGGKK'
     if len(S) == 1:
         return S[0]
     # Pick a guess which minimizes the maximum number of remaining S over
@@ -38,7 +38,7 @@ def solve(verbose=False):
         if verbose:
             print("%2d %4d %s %5s %s" %
                   (i, len(S), g, g in S, '+' * resp[0] + '-' * resp[1]))
-        if resp == (4, 0) or not S:
+        if resp == (6, 0) or not S:
             return i
         # only keep the codes which would give the same response
         S = tuple(s for s in S if score(s, g) == resp)
@@ -46,9 +46,9 @@ def solve(verbose=False):
 def main():
     
     global SECRET    
-    SECRET = ''.join(choices(COLORS, k=4))
+    SECRET = ''.join(choices(COLORS, k=6))
     
-    if len(SECRET) != 4 or set(SECRET) - set(COLORS):
+    if len(SECRET) != 6 or set(SECRET) - set(COLORS):
         sys.exit("ill-formed Mastermind code: %r" % SECRET)
 
     guesses = solve()
@@ -56,8 +56,8 @@ def main():
 
 if __name__ == '__main__':
     total = 0
-    for i in range(1000):
+    for i in range(1):
         num_guess = main()
         total += num_guess
 
-    print(f"All feedback: {total / 1000}")
+    print(f"All feedback: {total / 1}")
